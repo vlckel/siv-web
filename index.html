@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIV — výcvik nestandardních letových režimů nad polskými jezery</title>
+<meta name="description" content="SIV kurzy nad jezery Otmuchów a Paczków. Vlek motorovým člunem s odvijákem Parawinch GH8 do 900–1000 m AGL. Instruktor Hoffi. Ubytování v ceně.">
+<meta property="og:title" content="SIV — nestandardní letové režimy nad polskými jezery">
+<meta property="og:description" content="Nejbližší SIV z České republiky. 8 dní, 7–12 pilotů, vlek do 900–1000 m AGL, ubytování zdarma.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   SIV — designový systém
+   deep     #062A33  hluboká voda
+   deep-2   #0A3D49  hladina v protisvětle
+   fog      #E7EEEF  mlha nad jezerem
+   ink      #0C2028  text
+   signal   #E24A0F  signální oranžová (vesta, akce)
+   rope     #F5C518  vlečné lano (značky na výškové ose)
+   ============================================================ */
+:root{
+  --deep:#062A33; --deep-2:#0A3D49; --deep-3:#0E4E5C;
+  --fog:#E7EEEF; --paper:#F7FAFA;
+  --ink:#0C2028; --ink-soft:#48646E;
+  --signal:#E24A0F; --signal-bright:#FF7A38;
+  --rope:#F5C518;
+  --rail:88px;
+  --maxw:1160px;
+  --font-d:"Barlow Condensed",Impact,"Haettenschweiler","Arial Narrow",sans-serif;
+  --font-b:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--font-b); font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%; display:block}
+a{color:inherit}
+h1,h2,h3,h4{font-family:var(--font-d); font-weight:700; line-height:1.02; margin:0; letter-spacing:.005em}
+h2{font-size:clamp(34px,6.4vw,60px)}
+h3{font-size:clamp(23px,3.4vw,30px); line-height:1.12}
+p{margin:0 0 1em}
+:focus-visible{outline:3px solid var(--signal-bright); outline-offset:3px}
+
+/* ---------- layout ---------- */
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 22px}
+section{padding:clamp(56px,9vw,110px) 0; position:relative; scroll-margin-top:70px}
+.lede{font-size:clamp(18px,2.2vw,21px); line-height:1.55; max-width:34em; color:var(--ink-soft)}
+
+/* ---------- výšková osa (levá lišta) ---------- */
+.tape{display:none}
+@media (min-width:1080px){
+  body{padding-left:var(--rail)}
+  .tape{
+    display:block; position:fixed; inset:0 auto 0 0; width:var(--rail);
+    background:var(--deep); color:#fff; z-index:60;
+    border-right:1px solid rgba(255,255,255,.08);
+  }
+  .tape .line{position:absolute; left:34px; top:96px; bottom:96px; width:1px; background:rgba(255,255,255,.18)}
+  .tick{position:absolute; left:22px; transform:translateY(-50%); font-family:var(--font-d);
+        font-size:14px; letter-spacing:.06em; color:rgba(255,255,255,.5); white-space:nowrap}
+  .tick::before{content:""; position:absolute; left:12px; top:50%; width:13px; height:1px; background:rgba(255,255,255,.35)}
+  .tick span{display:block; padding-left:31px}
+  .marker{position:absolute; left:28px; width:13px; height:13px; margin-top:-6px; border-radius:50%;
+          background:var(--rope); box-shadow:0 0 0 4px rgba(245,197,24,.22); transition:top .35s cubic-bezier(.22,.61,.36,1)}
+  .readout{position:absolute; left:0; right:0; bottom:26px; text-align:center; font-family:var(--font-d)}
+  .readout b{display:block; font-size:26px; font-weight:600; color:var(--rope); letter-spacing:.02em}
+  .readout i{display:block; font-style:normal; font-size:12px; letter-spacing:.1em; color:rgba(255,255,255,.45)}
+  .tape .mark-top{position:absolute; top:34px; left:0; right:0; text-align:center; font-family:var(--font-d);
+                  font-size:19px; font-weight:700; letter-spacing:.14em; color:#fff}
+}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} .marker{transition:none} }
+
+/* ---------- navigace ---------- */
+.nav{position:sticky; top:0; z-index:50; background:rgba(6,42,51,.94); backdrop-filter:blur(9px);
+     border-bottom:1px solid rgba(255,255,255,.09)}
+.nav .wrap{display:flex; align-items:center; gap:18px; height:62px}
+.brand{font-family:var(--font-d); font-size:25px; font-weight:700; letter-spacing:.13em; color:#fff; text-decoration:none}
+.brand em{font-style:normal; color:var(--rope)}
+.nav ul{list-style:none; display:flex; gap:21px; margin:0 0 0 auto; padding:0}
+.nav a.n{color:rgba(255,255,255,.82); text-decoration:none; font-size:15px; font-weight:500}
+.nav a.n:hover{color:#fff; text-decoration:underline; text-underline-offset:5px}
+.call{background:var(--signal); color:#fff !important; text-decoration:none; font-weight:600;
+      padding:9px 15px; border-radius:2px; font-size:15px; white-space:nowrap}
+.burger{display:none; margin-left:auto; background:none; border:1px solid rgba(255,255,255,.3); color:#fff;
+        font-family:var(--font-d); font-size:17px; letter-spacing:.08em; padding:7px 13px; border-radius:2px}
+@media (max-width:900px){
+  .nav ul{position:absolute; top:62px; left:0; right:0; flex-direction:column; gap:0; background:var(--deep);
+          border-bottom:1px solid rgba(255,255,255,.12); display:none}
+  .nav ul.open{display:flex}
+  .nav ul li{border-top:1px solid rgba(255,255,255,.08)}
+  .nav a.n{display:block; padding:13px 22px}
+  .burger{display:block}
+  .nav .call{display:none}
+}
+
+/* ---------- hero ---------- */
+.hero{padding:0; background:var(--deep); color:#fff; overflow:hidden}
+.hero-grid{display:grid; grid-template-columns:1fr; align-items:stretch}
+@media (min-width:900px){ .hero-grid{grid-template-columns:1.05fr .95fr} }
+.hero-text{padding:clamp(46px,7vw,96px) 22px clamp(40px,6vw,80px); max-width:660px; margin-left:auto; width:100%}
+.hero h1{font-size:clamp(46px,8.4vw,88px); letter-spacing:-.005em}
+.hero h1 .sub{display:block; font-size:clamp(20px,3vw,30px); font-weight:500; color:var(--rope); margin-top:14px; line-height:1.16}
+.hero p{color:rgba(255,255,255,.8); max-width:31em; margin-top:22px; font-size:17.5px}
+.hero-photo{position:relative; min-height:290px; background:#04212a}
+.hero-photo img{width:100%; height:100%; object-fit:cover; opacity:.92}
+.hero-photo figcaption{position:absolute; left:0; right:0; bottom:0; padding:26px 22px 16px; font-size:13.5px;
+  color:rgba(255,255,255,.9); background:linear-gradient(transparent,rgba(4,26,33,.88))}
+.cta-row{display:flex; flex-wrap:wrap; gap:12px; margin-top:30px}
+.btn{display:inline-block; text-decoration:none; font-weight:600; font-size:16.5px; padding:14px 25px; border-radius:2px}
+.btn-p{background:var(--signal); color:#fff}
+.btn-p:hover{background:#c33f0b}
+.btn-g{border:1px solid rgba(255,255,255,.42); color:#fff}
+.btn-g:hover{border-color:#fff; background:rgba(255,255,255,.07)}
+.btn-d{background:var(--deep); color:#fff}
+.btn-d:hover{background:var(--deep-3)}
+.facts{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:rgba(255,255,255,.14); margin-top:38px}
+@media (min-width:620px){ .facts{grid-template-columns:repeat(4,1fr)} }
+.facts div{background:var(--deep); padding:16px 14px}
+.facts b{display:block; font-family:var(--font-d); font-size:31px; font-weight:600; color:#fff; line-height:1}
+.facts span{display:block; font-size:12.5px; color:rgba(255,255,255,.6); margin-top:7px; line-height:1.35}
+
+/* ---------- obecné bloky ---------- */
+.head{max-width:38em; margin-bottom:44px}
+.alt-badge{font-family:var(--font-d); font-size:15px; letter-spacing:.13em; color:var(--signal); font-weight:600;
+           display:block; margin-bottom:10px}
+.dark{background:var(--deep); color:#fff}
+.dark .lede{color:rgba(255,255,255,.74)}
+.dark .alt-badge{color:var(--rope)}
+
+/* ---------- vzdálenosti ---------- */
+.dist{list-style:none; margin:0; padding:0; max-width:520px}
+.dist li{display:grid; grid-template-columns:1fr auto; align-items:baseline; gap:12px;
+         padding:11px 0 9px; border-bottom:1px solid rgba(12,32,40,.13)}
+.dist .bar{grid-column:1/-1; height:3px; background:var(--signal); opacity:.75}
+.dist .km{font-family:var(--font-d); font-size:25px; font-weight:600}
+.dist .nm{font-weight:500}
+.dist li:first-child .km{color:var(--signal)}
+.two{display:grid; gap:clamp(34px,5vw,64px); grid-template-columns:1fr}
+@media (min-width:900px){ .two{grid-template-columns:1fr 1fr; align-items:start} }
+.photo-frame img{width:100%; height:100%; max-height:460px; object-fit:cover}
+.photo-frame figcaption{font-size:13.5px; color:var(--ink-soft); padding-top:9px}
+
+/* ---------- proč / výhody ---------- */
+.why{list-style:none; margin:26px 0 0; padding:0; display:grid; gap:2px}
+.why li{padding:13px 0 12px; border-top:1px solid rgba(255,255,255,.15)}
+.why b{font-family:var(--font-d); font-size:22px; font-weight:600; display:block; color:var(--rope)}
+.why span{color:rgba(255,255,255,.78); font-size:16px}
+
+/* ---------- kurzy ---------- */
+.course{border-top:3px solid var(--ink); padding-top:22px; margin-bottom:52px}
+.course.flag{border-top-color:var(--signal)}
+.course-top{display:grid; grid-template-columns:1fr; gap:6px 30px; align-items:end; margin-bottom:18px}
+@media (min-width:760px){ .course-top{grid-template-columns:1fr auto} }
+.price{font-family:var(--font-d); font-size:clamp(38px,6vw,58px); font-weight:700; line-height:.94; white-space:nowrap}
+.price small{font-size:.42em; font-weight:600; letter-spacing:.04em; display:block; color:var(--ink-soft)}
+.course.flag .price{color:var(--signal)}
+.meta{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px; padding:0; list-style:none}
+.meta li{font-size:13.5px; padding:5px 11px; background:var(--fog); border-radius:2px; font-weight:500}
+.incl{display:grid; gap:26px; grid-template-columns:1fr; margin-top:8px}
+@media (min-width:760px){ .incl{grid-template-columns:1.25fr .75fr} }
+.incl h4{font-size:19px; margin-bottom:9px}
+.incl ul{margin:0; padding-left:19px}
+.incl li{margin-bottom:5px}
+.incl .out li{color:var(--ink-soft)}
+.free{color:var(--signal); font-weight:600}
+.program{margin:22px 0; border-left:2px solid var(--fog); padding-left:20px}
+.program div{display:grid; grid-template-columns:auto 1fr; gap:14px; padding:4px 0; font-size:16px}
+.program dt{font-family:var(--font-d); font-size:19px; font-weight:600; color:var(--signal); min-width:88px}
+
+/* ---------- kalendář ---------- */
+.cal-list{margin-top:34px; border-top:1px solid rgba(255,255,255,.2)}
+.term{display:grid; grid-template-columns:1fr; gap:5px 26px; padding:20px 0;
+      border-bottom:1px solid rgba(255,255,255,.2); align-items:center}
+@media (min-width:800px){ .term{grid-template-columns:220px 1fr auto} }
+.term .date{font-family:var(--font-d); font-size:29px; font-weight:600; color:var(--rope); line-height:1}
+.term .date i{display:block; font-style:normal; font-size:13px; letter-spacing:.09em; color:rgba(255,255,255,.5); margin-top:6px; font-weight:500}
+.term .name{font-weight:600; font-size:17.5px}
+.term .name em{display:block; font-style:normal; font-weight:400; color:rgba(255,255,255,.65); font-size:15px}
+.term .act{display:flex; gap:9px; flex-wrap:wrap}
+.term .act a{font-size:14.5px; padding:9px 15px; text-decoration:none; border-radius:2px; font-weight:600}
+.a-book{background:var(--signal); color:#fff}
+.a-add{border:1px solid rgba(255,255,255,.4); color:#fff}
+.a-add:hover{background:rgba(255,255,255,.1)}
+.cal-note{margin-top:26px; font-size:14.5px; color:rgba(255,255,255,.62); display:flex; gap:12px; align-items:flex-start}
+.cal-state{display:inline-block; font-size:13px; font-weight:600; letter-spacing:.04em; padding:4px 10px;
+           border:1px solid var(--rope); color:var(--rope); border-radius:2px; margin-bottom:18px}
+.cal-sub{margin-top:24px; display:flex; gap:11px; flex-wrap:wrap}
+
+/* ---------- vybavení ---------- */
+.spec{list-style:none; margin:0; padding:0; column-gap:46px}
+@media (min-width:820px){ .spec{columns:2} }
+.spec li{break-inside:avoid; padding:12px 0; border-bottom:1px solid rgba(12,32,40,.12)}
+.spec b{font-weight:600}
+.spec span{display:block; color:var(--ink-soft); font-size:15.5px}
+
+/* ---------- checklist ---------- */
+.check{list-style:none; margin:0; padding:0; display:grid; gap:11px; grid-template-columns:1fr}
+@media (min-width:760px){ .check{grid-template-columns:1fr 1fr; gap:11px 40px} }
+.check li{display:grid; grid-template-columns:26px 1fr; gap:11px; align-items:start; padding-bottom:10px;
+          border-bottom:1px solid rgba(12,32,40,.1)}
+.check svg{margin-top:4px}
+.check small{display:block; color:var(--ink-soft); font-size:14.5px}
+
+/* ---------- storno ---------- */
+.storno{display:grid; grid-template-columns:1fr; gap:2px; margin-top:30px}
+@media (min-width:720px){ .storno{grid-template-columns:repeat(3,1fr)} }
+.storno div{background:var(--fog); padding:22px 20px}
+.storno div:nth-child(2){background:#F6DFCF}
+.storno div:nth-child(3){background:#F0C9B4}
+.storno b{display:block; font-family:var(--font-d); font-size:30px; font-weight:600; line-height:1}
+.storno span{font-size:15.5px; color:var(--ink)}
+
+/* ---------- video ---------- */
+.vids{display:grid; grid-template-columns:repeat(2,1fr); gap:2px; margin-top:34px}
+@media (min-width:800px){ .vids{grid-template-columns:repeat(4,1fr)} }
+.vid{position:relative; border:0; padding:0; cursor:pointer; background:#04212a; aspect-ratio:16/9; overflow:hidden}
+.vid img{width:100%; height:100%; object-fit:cover; opacity:.85}
+.vid:hover img{opacity:1}
+.vid::after{content:""; position:absolute; left:50%; top:50%; width:0; height:0; transform:translate(-42%,-50%);
+  border-left:20px solid #fff; border-top:12px solid transparent; border-bottom:12px solid transparent; filter:drop-shadow(0 2px 5px rgba(0,0,0,.5))}
+.vid.on::after{display:none}
+.vid iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+
+/* ---------- formulář ---------- */
+.form{display:grid; grid-template-columns:1fr; gap:17px; max-width:760px; margin-top:34px}
+@media (min-width:700px){ .form{grid-template-columns:1fr 1fr} }
+.f-wide{grid-column:1/-1}
+label{display:block; font-size:14.5px; font-weight:600; margin-bottom:6px}
+input[type=text],input[type=email],input[type=tel],select,textarea{
+  width:100%; font:inherit; font-size:16px; padding:11px 13px; border:1px solid #C6D2D5; border-radius:2px;
+  background:#fff; color:var(--ink)}
+textarea{min-height:110px; resize:vertical}
+select{appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--ink-soft) 50%),linear-gradient(135deg,var(--ink-soft) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 21px,calc(100% - 13px) 21px; background-size:6px 6px; background-repeat:no-repeat}
+.radios{display:flex; gap:18px; flex-wrap:wrap; padding-top:4px}
+.radios label,.cbx label{font-weight:400; font-size:16px; display:flex; gap:8px; align-items:center; margin:0}
+.cbx{display:flex; gap:10px; align-items:flex-start; background:var(--fog); padding:13px 15px}
+.hint{font-size:14.5px; color:var(--ink-soft); margin-top:-6px}
+.submit-row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+#formOut{font-size:15px; color:var(--signal); font-weight:600}
+
+/* ---------- kontakt / patička ---------- */
+.contact{display:grid; grid-template-columns:1fr; gap:34px}
+@media (min-width:800px){ .contact{grid-template-columns:1.1fr .9fr} }
+.big-tel{font-family:var(--font-d); font-size:clamp(38px,7vw,64px); font-weight:700; color:#fff; text-decoration:none; line-height:1; display:inline-block}
+.big-tel:hover{color:var(--rope)}
+.c-line{margin-top:18px; color:rgba(255,255,255,.78)}
+.c-line a{color:var(--rope)}
+footer{background:#04212A; color:rgba(255,255,255,.55); padding:34px 0; font-size:14.5px}
+footer .wrap{display:flex; flex-wrap:wrap; gap:16px; justify-content:space-between; align-items:center}
+footer a{color:rgba(255,255,255,.8)}
+.skip{position:absolute; left:-9999px}
+.skip:focus{position:static; display:inline-block; padding:10px; background:var(--rope); color:#000}
+</style>
+</head>
+<body>
+
+<!-- výšková osa -->
+<aside class="tape" aria-hidden="true">
+  <div class="mark-top">AGL</div>
+  <div class="line"></div>
+  <div class="ticks" id="ticks"></div>
+  <div class="marker" id="marker" style="top:96px"></div>
+  <div class="readout"><b id="roVal">1000</b><i id="roLbl">METRŮ</i></div>
+</aside>
+
+<a class="skip" href="#main">Přeskočit na obsah</a>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">SIV<em>.</em></a>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="menu">Menu</button>
+    <ul id="menu">
+      <li><a class="n" href="#kurzy">Kurzy a ceny</a></li>
+      <li><a class="n" href="#kalendar">Kalendář</a></li>
+      <li><a class="n" href="#vybaveni">Vybavení</a></li>
+      <li><a class="n" href="#potreba">Co je potřeba</a></li>
+      <li><a class="n" href="#rezervace">Rezervace</a></li>
+      <li><a class="n" href="#kontakt">Kontakt</a></li>
+      <li><a class="n" href="https://www.siv2024.eu/pl/" hreflang="pl">PL</a></li>
+    </ul>
+    <a class="call" href="tel:+420775558448">775 558 448</a>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ======================= HERO 1000 m ======================= -->
+<section class="hero" id="top" data-alt="1000" data-label="VLEK / TOW">
+  <div class="hero-grid">
+    <div class="hero-text">
+      <h1>Nestandardní letové režimy
+        <span class="sub">nad jezery Otmuchów a Paczków</span>
+      </h1>
+      <p>Jak se posouvají konstrukce a výkony křídel, tak i my inovujeme výcvik S.I.V. — Simulation d'Incident en Vol. Připravili jsme změny v systému výuky i nové produkty pro začátečníky, zkušené XC piloty a tandem piloty tak, aby byly dostupné časově i finančně.</p>
+      <div class="cta-row">
+        <a class="btn btn-p" href="#rezervace">Rezervovat termín</a>
+        <a class="btn btn-g" href="#kalendar">Volné termíny</a>
+      </div>
+      <div class="facts">
+        <div><b>900–1000</b><span>metrů AGL výška vleku</span></div>
+        <div><b>8</b><span>dní kurzu</span></div>
+        <div><b>7–12</b><span>pilotů na kurz</span></div>
+        <div><b>114 km</b><span>z Hradce Králové</span></div>
+      </div>
+    </div>
+    <figure class="hero-photo">
+      <img src="https://6a7fa357e3.clvaw-cdnwnd.com/110966cb692afb01c8174a5657796767/200000656-cf312cf314/Bez%20n%C3%A1zvu%20%E2%80%93%201-4.jpeg?ph=6a7fa357e3" alt="Vláďa Hoffman (Hoffi) — SIV instruktor, testovací a akrobatický pilot">
+      <figcaption>V. Hoffman (HOFFI) — SIV instruktor, test pilot, acro pilot</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================= PROČ DO POLSKA 900 m ======================= -->
+<section id="proc" data-alt="900" data-label="PROČ POLSKO">
+  <div class="wrap">
+    <div class="two">
+      <div>
+        <div class="head">
+          <span class="alt-badge">Nejbližší SIV z České republiky</span>
+          <h2>Proč do Polska</h2>
+          <p class="lede">Cesta je z 90 % po dálnici, v autě strávíš minimum času. Termíny jsou postavené tak, aby sis bral co nejméně dovolené.</p>
+        </div>
+        <ul class="dist" id="dist">
+          <li><span class="nm">Hradec Králové</span><span class="km">114 km</span><span class="bar"></span></li>
+          <li><span class="nm">Ostrava</span><span class="km">147 km</span><span class="bar"></span></li>
+          <li><span class="nm">Brno</span><span class="km">187 km</span><span class="bar"></span></li>
+          <li><span class="nm">Praha</span><span class="km">220 km</span><span class="bar"></span></li>
+          <li><span class="nm">Žilina</span><span class="km">244 km</span><span class="bar"></span></li>
+          <li><span class="nm">Bratislava</span><span class="km">340 km</span><span class="bar"></span></li>
+        </ul>
+        <div class="cta-row">
+          <a class="btn btn-d" href="https://maps.app.goo.gl/q1LypetGfFoRuQzG8" target="_blank" rel="noopener">Otmuchów na mapě</a>
+          <a class="btn btn-d" href="https://maps.app.goo.gl/mgo3XYz5K9MeT52d9" target="_blank" rel="noopener">Paczków na mapě</a>
+        </div>
+      </div>
+      <figure class="photo-frame">
+        <img src="https://6a7fa357e3.clvaw-cdnwnd.com/110966cb692afb01c8174a5657796767/200000530-500ab500ac/12120130_10204314228728380_7221010045520002614_o.jpeg?ph=6a7fa357e3" alt="Trénink nad vodní hladinou">
+        <figcaption>Přistáváš v místě startu — odpadá balení křídla a cesta autem na kopec.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= VLEK 800 m ======================= -->
+<section class="dark" id="vlek" data-alt="800" data-label="ODVIJÁK">
+  <div class="wrap">
+    <div class="head">
+      <span class="alt-badge">Parawinch GH8 hybrid</span>
+      <h2>Do vzduchu rovným letem</h2>
+      <p class="lede">Vlekáme motorovým člunem Glastron s moderním elektronickým odvijákem do průměrné výšky 900 až 1000 m AGL podle směru a síly větru.</p>
+    </div>
+    <ul class="why">
+      <li><b>Víc času na odpočinek</b><span>Vlekání za lodí ti dá pauzu mezi jednotlivými lety.</span></li>
+      <li><b>Ubytování v ceně</b><span>V kempu máme ubytování exkluzivně zdarma.</span></li>
+      <li><b>Nemáš zkušenost s odvijákem?</b><span>Získáš ji. Právě tady.</span></li>
+      <li><b>Zázemí u vody</b><span>Čas mezi lety využiješ k relaxu, občerstvení nebo ke sdílení zážitků pod hvězdicovým stanem.</span></li>
+    </ul>
+    <div class="vids" id="vids">
+      <button class="vid" data-yt="sHE5aB3kIfc" aria-label="Přehrát video 1"><img loading="lazy" src="https://i.ytimg.com/vi/sHE5aB3kIfc/hqdefault.jpg" alt=""></button>
+      <button class="vid" data-yt="8XDf6HcUKO0" aria-label="Přehrát video 2"><img loading="lazy" src="https://i.ytimg.com/vi/8XDf6HcUKO0/hqdefault.jpg" alt=""></button>
+      <button class="vid" data-yt="4n_aAeuFDwU" aria-label="Přehrát video 3"><img loading="lazy" src="https://i.ytimg.com/vi/4n_aAeuFDwU/hqdefault.jpg" alt=""></button>
+      <button class="vid" data-yt="SbOQWZADEQg" aria-label="Přehrát video 4"><img loading="lazy" src="https://i.ytimg.com/vi/SbOQWZADEQg/hqdefault.jpg" alt=""></button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= KURZY 700 m ======================= -->
+<section id="kurzy" data-alt="700" data-label="KURZY">
+  <div class="wrap">
+    <div class="head">
+      <span class="alt-badge">Ceník 2026</span>
+      <h2>Kurzy a ceny</h2>
+    </div>
+
+    <!-- SIV -->
+    <article class="course flag">
+      <div class="course-top">
+        <h3>SIV — všichni piloti</h3>
+        <div class="price">19 990 Kč<small>8 dní · 7–12 pilotů</small></div>
+      </div>
+      <p class="lede">Pro všechny piloty, kteří se chtějí zdokonalit v ovládání svého křídla a trénovat nestandardní letové situace, aby nebyli ve vzduchu zaskočeni.</p>
+      <ul class="meta">
+        <li>Otmuchów / Paczków, Polsko</li>
+        <li>2 lety denně, max. 10 letů</li>
+        <li>Náročnost: nízká až vysoká</li>
+      </ul>
+      <dl class="program">
+        <div><dt>Neděle</dt><dd>Ubytování, kontrola sedaček a záložáků, instalace plováků na kliky, fasování vest a vysílaček. Večer briefing.</dd></div>
+        <div><dt>Po–Čt</dt><dd>Trénink nad vodou.</dd></div>
+        <div><dt>Sobota</dt><dd>Házení záložáků, rezervní den.</dd></div>
+        <div><dt>Neděle</dt><dd>Rezervní den.</dd></div>
+      </dl>
+      <div class="incl">
+        <div>
+          <h4>V ceně kurzu</h4>
+          <ul>
+            <li>2 lety / den, max. 10 letů</li>
+            <li>Záchranná automatická vesta</li>
+            <li>Zapůjčení certifikovaného odpínáku Dudek (DHV)</li>
+            <li>Zapůjčení vodotěsné vysílačky UHF/VHF včetně sluchátka (výběr ze dvou typů)</li>
+            <li>Péče SIV instruktora</li>
+            <li>Rozbory letů na velkoplošné 4K TV</li>
+            <li>Zázemí dvou velkých uzavřených stanů v kempu a hvězdicového stanu u vody</li>
+            <li>Welcome drink Red Bull a káva zdarma po celý den (bezedný šálek)</li>
+            <li><span class="free">Ubytování v hotelovém a kongresovém centru SANDACZ Otmuchów zdarma</span> (podmínkou je stravování v areálu ubytování)</li>
+          </ul>
+        </div>
+        <div class="out">
+          <h4>Cena neobsahuje</h4>
+          <ul>
+            <li>Dopravu na místo</li>
+            <li>Jídlo</li>
+          </ul>
+          <p style="font-size:15px;color:var(--ink-soft);margin-top:14px">Platba kartou i v hotovosti.</p>
+          <a class="btn btn-p" href="#rezervace">Rezervovat SIV</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- SIV 1 den -->
+    <article class="course">
+      <div class="course-top">
+        <h3>SIV — 1 den, pokročilí piloti</h3>
+        <div class="price">4 900 Kč<small>1 den</small></div>
+      </div>
+      <p class="lede">Pro piloty, kteří už na SIV byli, zvládnou 3 lety denně a chtějí si vše zopakovat, oživit nebo otestovat nové křídlo.</p>
+      <ul class="meta">
+        <li>Otmuchów / Paczków, Polsko</li>
+        <li>Náročnost: střední až vysoká</li>
+        <li>Kapacita podle obsazenosti kurzu</li>
+      </ul>
+      <p><strong>Termín si vyber z kalendáře — účast je nutné domluvit a potvrdit individuálně podle obsazenosti.</strong></p>
+      <div class="incl">
+        <div>
+          <h4>V ceně kurzu</h4>
+          <ul>
+            <li>2 lety / den</li>
+            <li>Záchranná automatická vesta a záchranná loď</li>
+            <li>Zapůjčení certifikovaného odpínáku Dudek (DHV)</li>
+            <li>Zapůjčení vodotěsné vysílačky UHF/VHF včetně sluchátka</li>
+            <li>Péče SIV instruktora a rozbory letů na 4K TV</li>
+            <li>Welcome drink Red Bull a káva zdarma po celý den</li>
+            <li><span class="free">Ubytování v centru SANDACZ Otmuchów zdarma</span> (podmínkou je stravování v areálu)</li>
+          </ul>
+        </div>
+        <div class="out">
+          <h4>Cena neobsahuje</h4>
+          <ul><li>Dopravu na místo</li><li>Jídlo</li></ul>
+          <p style="font-size:15px;color:var(--ink-soft);margin-top:14px">Platba kartou.</p>
+          <a class="btn btn-d" href="#rezervace">Vybrat termín</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Spirála -->
+    <article class="course">
+      <div class="course-top">
+        <h3>Spirála a G-force trénink, letiště Všechov</h3>
+        <div class="price">4 990 Kč<small>1,5 dne · 5–10 pilotů</small></div>
+      </div>
+      <p class="lede">Pro všechny piloty, kteří se chtějí naučit spirálu, otestovat svou náchylnost k blackoutu a seznámit se s celou problematikou.</p>
+      <ul class="meta">
+        <li>Letiště Všechov, ČR</li>
+        <li>2 lety, 800–900 m AGL</li>
+        <li>Náročnost: malá</li>
+      </ul>
+      <div class="incl">
+        <div>
+          <h4>V ceně kurzu</h4>
+          <ul>
+            <li>Úvodní briefing a přednáška — problematika a technika spirály, její použití, ostatní sestupové manévry</li>
+            <li>3 lety na odvijáku s instruktorem</li>
+            <li>Péče instruktora a video rozbor</li>
+            <li>Zázemí velkého uzavřeného stanu</li>
+          </ul>
+        </div>
+        <div class="out">
+          <h4>Cena neobsahuje</h4>
+          <ul><li>Dopravu na místo</li><li>Jídlo</li><li>Ubytování</li></ul>
+          <p style="font-size:15px;color:var(--ink-soft);margin-top:14px">Objednat lze pouze telefonicky.</p>
+          <a class="btn btn-d" href="tel:+420775558448">Zavolat 775 558 448</a>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ======================= KALENDÁŘ 500 m ======================= -->
+<section class="dark" id="kalendar" data-alt="500" data-label="TERMÍNY">
+  <div class="wrap">
+    <div class="head">
+      <span class="alt-badge">Napojeno na Google Kalendář</span>
+      <h2>Termíny kurzů</h2>
+      <p class="lede">Termíny se načítají přímo z Google Kalendáře — co je v kalendáři, to platí i tady. Pokud termín nevidíš, je plně obsazený.</p>
+    </div>
+
+    <div id="calState"></div>
+    <div class="cal-list" id="calList" aria-live="polite">
+      <p style="padding:22px 0;color:rgba(255,255,255,.65)">Načítám termíny…</p>
+    </div>
+
+    <div class="cal-sub" id="calSub"></div>
+
+    <div class="cal-note">
+      <span>SIV — 1 DEN: vyber termín a obsazenost si ověř SMS nebo přes WhatsApp. Díky za pochopení.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= VYBAVENÍ 400 m ======================= -->
+<section id="vybaveni" data-alt="400" data-label="VYBAVENÍ">
+  <div class="wrap">
+    <div class="two">
+      <div>
+        <div class="head">
+          <span class="alt-badge">Sezóna 2026</span>
+          <h2>S čím pracujeme</h2>
+          <p class="lede">Vybavení, které na kurzu potkáš — a proč ho tam máme.</p>
+        </div>
+        <ul class="spec">
+          <li><b>Odviják Parawinch GH8 hybrid</b><span>Nový elektronický odviják pro pohodlí při vlekání.</span></li>
+          <li><b>Motorový člun Glastron</b><span>Silný vlekový člun.</span></li>
+          <li><b>Safety boat Yamaha LS2000 JET</b><span>Bez vrtule — vyšší bezpečnost na vodě.</span></li>
+          <li><b>Vysílačky a sluchátka</b><span>Výkonné vysílačky pro bezproblémové spojení instruktor–pilot, dva typy sluchátek na výběr.</span></li>
+          <li><b>Odpínáky Dudek</b><span>Sada s certifikací DHV.</span></li>
+          <li><b>Kamera Panasonic 4K</b><span>Profesionální kamera s videostativem a fluidní hlavou, náhledový monitor, aby tě kameraman neztratil z hledáčku.</span></li>
+          <li><b>QLED TV 75", UHD 4K</b><span>Pro rozbory letů.</span></li>
+          <li><b>Modely paraglidu</b><span>Dva malé modely pro názorné didaktické ukázky.</span></li>
+          <li><b>Dvojstan Coleman 41 m²</b><span>Variabilní bočnice, zázemí pro rozbory a občerstvení.</span></li>
+          <li><b>Hvězdicový stan 60 m²</b><span>Otevřené zázemí přímo u vody.</span></li>
+          <li><b>Welcome drink Red Bull</b><span>Nevím, jestli ti dá křídla a naučí tě lépe létat, ale určitě povzbudí a udrží pozornost.</span></li>
+          <li><b>Káva zdarma</b><span>Po celou dobu kurzu, bezedný šálek.</span></li>
+        </ul>
+      </div>
+      <figure class="photo-frame">
+        <img src="https://6a7fa357e3.clvaw-cdnwnd.com/110966cb692afb01c8174a5657796767/200000432-98b7998b7b/BEZPECNOSTNI%20TRENINK-4.jpeg?ph=6a7fa357e3" alt="Bezpečnostní trénink nad vodou">
+        <figcaption>Rozbory letů probíhají tentýž den na velkoplošné 4K TV.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CO JE POTŘEBA 200 m ======================= -->
+<section id="potreba" data-alt="200" data-label="PŘED KURZEM">
+  <div class="wrap">
+    <div class="head">
+      <span class="alt-badge">Než vyrazíš</span>
+      <h2>Co je potřeba</h2>
+      <p class="lede">Bez těchto věcí tě na vodu nepustíme. Projdi si to prosím ještě doma.</p>
+    </div>
+    <ul class="check">
+      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10.5l5 5L18 4" fill="none" stroke="#E24A0F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Platný pilotní průkaz</b></div></li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10.5l5 5L18 4" fill="none" stroke="#E24A0F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Pojištění léčebných výloh</b><small>Pro paragliding do zahraničí.</small></div></li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10.5l5 5L18 4" fill="none" stroke="#E24A0F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Pojištění odpovědnosti třetí osobě</b></div></li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10.5l5 5L18 4" fill="none" stroke="#E24A0F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Kartička zdravotní pojišťovny</b></div></li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10.5l5 5L18 4" fill="none" stroke="#E24A0F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Křídlo s platnou technickou kontrolou</b></div></li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10.5l5 5L18 4" fill="none" stroke="#E24A0F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Sedačka s chráničem páteře</b></div></li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10.5l5 5L18 4" fill="none" stroke="#E24A0F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Přebalený záložák</b><small>Potvrď zaškrtnutím políčka v rezervaci.</small></div></li>
+      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10.5l5 5L18 4" fill="none" stroke="#E24A0F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Nemáš přebaleno?</b><small>Přebalíme na místě za 590 Kč — zaškrtni v rezervaci.</small></div></li>
+    </ul>
+
+    <h3 style="margin-top:64px">Storno podmínky</h3>
+    <p class="lede" style="margin-top:12px">Uhrazením zálohy 2 000 Kč je rezervováno místo pro účastníka. Zaplacením zálohy souhlasíš s podmínkami níže. Každému, kdo kurz přeruší nebo nezahájí, nabídneme individuální řešení.</p>
+    <div class="storno">
+      <div><b>30 dní předem</b><span>Bez poplatku, vracíme celou zálohu.</span></div>
+      <div><b>15 dní předem</b><span>Vracíme 50 % zálohy.</span></div>
+      <div><b>6 dní předem</b><span>Záloha propadá celá.</span></div>
+    </div>
+    <p style="margin-top:18px;font-size:15.5px;color:var(--ink-soft)">Záloha je přenosná na třetí osobu.</p>
+  </div>
+</section>
+
+<!-- ======================= REZERVACE 100 m ======================= -->
+<section class="dark" id="rezervace" data-alt="100" data-label="REZERVACE" style="background:var(--deep-2)">
+  <div class="wrap">
+    <div class="head">
+      <span class="alt-badge">Online rezervace 2026</span>
+      <h2>Zarezervuj si místo včas</h2>
+      <p class="lede">Rezervaci ti potvrdíme přidáním do skupiny SIV-2026 na WhatsAppu. Pokud termín v nabídce nevidíš, je plně obsazený.</p>
+    </div>
+
+    <div class="form" style="color:var(--ink)">
+      <div><label for="f-name">Jméno a příjmení</label><input type="text" id="f-name" autocomplete="name"></div>
+      <div><label for="f-mail">E-mail</label><input type="email" id="f-mail" autocomplete="email"></div>
+      <div><label for="f-tel">Telefonní číslo</label><input type="tel" id="f-tel" autocomplete="tel"></div>
+      <div><label for="f-kurz">Vyber kurz</label>
+        <select id="f-kurz">
+          <option>SIV</option>
+          <option>SIV — 1 DEN (termín ověř telefonicky)</option>
+          <option>Spirála + G-force trénink</option>
+        </select></div>
+      <div><label for="f-term">Termín</label><select id="f-term"><option>Načítám z kalendáře…</option></select></div>
+      <div><label for="f-wing">Křídlo — výrobce, model</label><input type="text" id="f-wing"></div>
+      <div><label for="f-en">Křídlo dle EN normy</label>
+        <select id="f-en"><option>EN-A</option><option>EN-B</option><option>EN-C</option><option>EN-D</option><option>2 lajna</option></select></div>
+      <div><label for="f-lic">Pilotní průkaz</label>
+        <select id="f-lic"><option>Pilot</option><option>Sportovní pilot</option><option>Soutěžní pilot</option><option>Tandem pilot</option></select></div>
+
+      <div class="f-wide"><label>Je to tvoje první SIV?</label>
+        <div class="radios"><label><input type="radio" name="first" value="Ano"> Ano</label><label><input type="radio" name="first" value="Ne" checked> Ne</label></div></div>
+      <div class="f-wide"><label>Startoval jsi z odvijáku nebo navijáku?</label>
+        <div class="radios"><label><input type="radio" name="tow" value="Ano" checked> Ano</label><label><input type="radio" name="tow" value="Ne"> Ne</label></div></div>
+      <div class="f-wide"><label>Máš přebalený záložák?</label>
+        <div class="radios">
+          <label><input type="radio" name="res" value="Ano — kulatý" checked> Ano, kulatý</label>
+          <label><input type="radio" name="res" value="Ano — čtvercový"> Ano, čtvercový</label>
+          <label><input type="radio" name="res" value="Ano — delta"> Ano, delta</label>
+          <label><input type="radio" name="res" value="Ne"> Ne</label>
+        </div></div>
+      <div class="f-wide cbx"><input type="checkbox" id="f-fold" style="width:auto;margin-top:4px"><label for="f-fold">Budu chtít přebalit záložák na místě (590 Kč)</label></div>
+      <div class="f-wide"><label for="f-note">Poznámky nebo otázky</label><textarea id="f-note"></textarea></div>
+      <div class="f-wide submit-row">
+        <button class="btn btn-p" id="send" type="button">Odeslat rezervaci</button>
+        <a class="btn btn-g" href="https://wa.me/420775558448" target="_blank" rel="noopener">Napsat na WhatsApp</a>
+        <span id="formOut"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= KONTAKT 0 m ======================= -->
+<section class="dark" id="kontakt" data-alt="0" data-label="HLADINA">
+  <div class="wrap contact">
+    <div>
+      <span class="alt-badge">Kontakt</span>
+      <a class="big-tel" href="tel:+420775558448">+420 775 558 448</a>
+      <div class="c-line">Hoffi — SIV instruktor</div>
+      <div class="c-line"><a href="mailto:SIV2024@seznam.cz">SIV2024@seznam.cz</a></div>
+      <div class="c-line">Liberecká 50, Jablonec nad Nisou, 466 01</div>
+    </div>
+    <div>
+      <h3 style="color:#fff">Skupina pilotů</h3>
+      <p style="color:rgba(255,255,255,.74);margin-top:10px">Novinky, počasí a domluva před kurzem probíhá ve facebookové skupině a na WhatsAppu.</p>
+      <div class="cta-row">
+        <a class="btn btn-g" href="https://www.facebook.com/groups/993941537329126" target="_blank" rel="noopener">Facebook skupina</a>
+        <a class="btn btn-g" href="https://wa.me/420775558448" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>SIV © 2026 — všechna práva vyhrazena</span>
+    <span><a href="https://www.siv2024.eu/pl/" hreflang="pl">Polski</a> · <a href="#top">Nahoru</a></span>
+  </div>
+</footer>
+
+<script>
+/* =========================================================================
+   1) GOOGLE KALENDÁŘ — jediné místo, kde se něco nastavuje
+   -------------------------------------------------------------------------
+   calendarId : ID veřejného Google Kalendáře (Nastavení kalendáře →
+                „Integrovat kalendář" → ID kalendáře)
+   apiKey     : API klíč z Google Cloud Console (Calendar API), omezený
+                na doménu webu
+   Dokud jsou hodnoty prázdné, web ukáže ukázkové termíny a označí je.
+   ========================================================================= */
+const CAL = {
+  calendarId: "",        // např. "abc123@group.calendar.google.com"
+  apiKey:     "",        // např. "AIzaSy..."
+  maxResults: 40
+};
+
+/* ukázková data — nahradí se, jakmile se doplní CAL výše */
+const DEMO = [
+  { start:"2026-08-29", end:"2026-09-07", title:"SIV — všichni piloti", location:"Otmuchów, Polsko" },
+  { start:"2026-09-13", end:"2026-09-21", title:"SIV — všichni piloti", location:"Paczków, Polsko" },
+  { start:"2026-10-03", end:"2026-10-04", title:"Spirála + G-force trénink", location:"Letiště Všechov, ČR" }
+];
+
+const MON = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
+const pad = n => String(n).padStart(2,"0");
+
+function fmtRange(s, e){
+  const a = new Date(s), b = new Date(e);
+  const sameM = a.getMonth()===b.getMonth() && a.getFullYear()===b.getFullYear();
+  return sameM
+    ? `${a.getDate()}.–${b.getDate()}. ${a.getMonth()+1}.`
+    : `${a.getDate()}. ${a.getMonth()+1}. – ${b.getDate()}. ${b.getMonth()+1}.`;
+}
+function longRange(s,e){
+  const a=new Date(s), b=new Date(e);
+  return `${a.getDate()}. ${MON[a.getMonth()]} – ${b.getDate()}. ${MON[b.getMonth()]} ${b.getFullYear()}`;
+}
+function gcalLink(ev){
+  const f = d => d.replace(/-/g,"");
+  const end = new Date(ev.end); end.setDate(end.getDate()+1);
+  const endStr = `${end.getFullYear()}${pad(end.getMonth()+1)}${pad(end.getDate())}`;
+  const p = new URLSearchParams({
+    action:"TEMPLATE", text:ev.title,
+    dates:`${f(ev.start)}/${endStr}`,
+    location:ev.location||"", details:"Rezervace: https://www.siv2024.eu/#rezervace"
+  });
+  return "https://calendar.google.com/calendar/render?"+p.toString();
+}
+
+function render(events, live){
+  const list  = document.getElementById("calList");
+  const state = document.getElementById("calState");
+  const sub   = document.getElementById("calSub");
+  const sel   = document.getElementById("f-term");
+
+  if(!events.length){
+    list.innerHTML = '<p style="padding:26px 0;color:rgba(255,255,255,.7)">Pro nadcházející období zatím nejsou vypsané žádné termíny. Zavolej na 775 558 448 a domluvíme se individuálně.</p>';
+    return;
+  }
+
+  state.innerHTML = live
+    ? ""
+    : '<span class="cal-state">Ukázkové termíny — kalendář ještě není propojený</span>';
+
+  list.innerHTML = events.map(ev => `
+    <div class="term">
+      <div class="date">${fmtRange(ev.start, ev.end)}
+        <i>${new Date(ev.start).getFullYear()}${ev.days ? " · "+ev.days+" dní" : ""}</i></div>
+      <div class="name">${ev.title}<em>${ev.location||"Otmuchów / Paczków, Polsko"}</em></div>
+      <div class="act">
+        <a class="a-book" href="#rezervace">Rezervovat</a>
+        <a class="a-add" href="${gcalLink(ev)}" target="_blank" rel="noopener">Přidat do kalendáře</a>
+      </div>
+    </div>`).join("");
+
+  if(live && CAL.calendarId){
+    const id = encodeURIComponent(CAL.calendarId);
+    sub.innerHTML = `
+      <a class="btn btn-g" target="_blank" rel="noopener"
+         href="https://calendar.google.com/calendar/u/0/r?cid=${id}">Přidat celý kalendář do Googlu</a>
+      <a class="btn btn-g" target="_blank" rel="noopener"
+         href="https://calendar.google.com/calendar/ical/${id}/public/basic.ics">Odebírat (.ics)</a>`;
+  }
+
+  /* termíny rovnou do rezervačního formuláře */
+  sel.innerHTML = events.map(ev =>
+    `<option>${ev.title.replace(/\s*—.*$/,"")} · ${longRange(ev.start, ev.end)}</option>`
+  ).join("") + '<option>Jiný termín — domluvíme telefonicky</option>';
+}
+
+async function loadCalendar(){
+  if(!CAL.calendarId || !CAL.apiKey){ render(DEMO, false); return; }
+  try{
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CAL.calendarId)}/events`
+      + `?key=${CAL.apiKey}&singleEvents=true&orderBy=startTime`
+      + `&timeMin=${new Date().toISOString()}&maxResults=${CAL.maxResults}`;
+    const r = await fetch(url);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const data = await r.json();
+    const events = (data.items||[]).map(it => {
+      const s = it.start.date || (it.start.dateTime||"").slice(0,10);
+      let e = it.end.date || (it.end.dateTime||"").slice(0,10);
+      if(it.end.date){ const d=new Date(e); d.setDate(d.getDate()-1);
+        e = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+      const days = Math.round((new Date(e)-new Date(s))/86400000)+1;
+      return { start:s, end:e, title:it.summary||"SIV kurz", location:it.location||"", days };
+    });
+    render(events, true);
+  }catch(err){
+    console.warn("Google Kalendář se nepodařilo načíst:", err);
+    render(DEMO, false);
+  }
+}
+loadCalendar();
+
+/* ---------- výšková osa ---------- */
+(function(){
+  const sections = [...document.querySelectorAll("section[data-alt]")];
+  const ticks = document.getElementById("ticks");
+  if(ticks){
+    [1000,800,600,400,200,0].forEach(v=>{
+      const el = document.createElement("div");
+      el.className = "tick";
+      el.style.top = `calc(96px + ${(1 - v/1000)} * (100vh - 192px))`;
+      el.innerHTML = `<span>${v}</span>`;
+      ticks.appendChild(el);
+    });
+  }
+  const marker = document.getElementById("marker"),
+        roVal  = document.getElementById("roVal"),
+        roLbl  = document.getElementById("roLbl");
+  if(!marker) return;
+  let ticking = false;
+  function update(){
+    ticking = false;
+    const mid = window.scrollY + window.innerHeight*0.35;
+    let cur = sections[0];
+    for(const s of sections){ if(s.offsetTop <= mid) cur = s; }
+    const alt = +cur.dataset.alt;
+    marker.style.top = `calc(96px + ${(1 - alt/1000)} * (100vh - 192px))`;
+    roVal.textContent = alt;
+    roLbl.textContent = cur.dataset.label;
+  }
+  addEventListener("scroll", ()=>{ if(!ticking){ ticking=true; requestAnimationFrame(update); } }, {passive:true});
+  addEventListener("resize", update);
+  update();
+})();
+
+/* ---------- pruhy vzdáleností ---------- */
+document.querySelectorAll("#dist li").forEach(li=>{
+  const km = parseInt(li.querySelector(".km").textContent,10);
+  li.querySelector(".bar").style.width = (km/340*100).toFixed(1)+"%";
+});
+
+/* ---------- menu ---------- */
+const burger = document.getElementById("burger"), menu = document.getElementById("menu");
+burger.addEventListener("click", ()=>{
+  const open = menu.classList.toggle("open");
+  burger.setAttribute("aria-expanded", open);
+});
+menu.addEventListener("click", e=>{ if(e.target.tagName==="A"){ menu.classList.remove("open"); burger.setAttribute("aria-expanded","false"); }});
+
+/* ---------- videa se načtou až na kliknutí ---------- */
+document.querySelectorAll(".vid").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    if(b.classList.contains("on")) return;
+    b.classList.add("on");
+    b.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.yt}?autoplay=1"
+      title="SIV video" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen></iframe>`;
+  });
+});
+
+/* ---------- rezervační formulář → e-mail ---------- */
+document.getElementById("send").addEventListener("click", ()=>{
+  const v = id => (document.getElementById(id).value||"").trim();
+  const rad = n => (document.querySelector(`input[name="${n}"]:checked`)||{}).value || "";
+  const out = document.getElementById("formOut");
+  if(!v("f-name") || !v("f-tel")){ out.textContent = "Doplň prosím jméno a telefon."; return; }
+  const body = [
+    "Jméno: "+v("f-name"),
+    "E-mail: "+v("f-mail"),
+    "Telefon: "+v("f-tel"),
+    "Kurz: "+v("f-kurz"),
+    "Termín: "+v("f-term"),
+    "Křídlo: "+v("f-wing")+" ("+v("f-en")+")",
+    "Pilotní průkaz: "+v("f-lic"),
+    "První SIV: "+rad("first"),
+    "Zkušenost s odvijákem/navijákem: "+rad("tow"),
+    "Přebalený záložák: "+rad("res"),
+    "Přebalit na místě (590 Kč): "+(document.getElementById("f-fold").checked?"Ano":"Ne"),
+    "",
+    v("f-note")
+  ].join("\n");
+  out.textContent = "Otevírám e-mail…";
+  location.href = "mailto:SIV2024@seznam.cz?subject="
+    + encodeURIComponent("Rezervace SIV — "+v("f-name"))
+    + "&body=" + encodeURIComponent(body);
+});
+</script>
+</body>
+</html>
