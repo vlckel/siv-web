@@ -87,6 +87,8 @@ section{padding:clamp(56px,9vw,110px) 0; position:relative; scroll-margin-top:70
 .nav ul{list-style:none; display:flex; gap:21px; margin:0 0 0 auto; padding:0}
 .nav a.n{color:rgba(255,255,255,.82); text-decoration:none; font-size:15px; font-weight:500}
 .nav a.n:hover{color:#fff; text-decoration:underline; text-underline-offset:5px}
+.nav a.dnk{color:var(--rope); font-weight:600}
+.nav a.dnk::before{content:"●"; font-size:9px; vertical-align:middle; margin-right:6px; color:var(--rope)}
 .call{background:var(--signal); color:#fff !important; text-decoration:none; font-weight:600;
       padding:9px 15px; border-radius:2px; font-size:15px; white-space:nowrap}
 .burger{display:none; margin-left:auto; background:none; border:1px solid rgba(255,255,255,.3); color:#fff;
@@ -257,6 +259,51 @@ select{appearance:none; background-image:linear-gradient(45deg,transparent 50%,v
 footer{background:#04212A; color:rgba(255,255,255,.55); padding:34px 0; font-size:14.5px}
 footer .wrap{display:flex; flex-wrap:wrap; gap:16px; justify-content:space-between; align-items:center}
 footer a{color:rgba(255,255,255,.8)}
+/* ---------- volby ve formuláři ---------- */
+.opt{position:relative; display:inline-flex; margin:0 8px 8px 0; cursor:pointer}
+.opt input{position:absolute; opacity:0; width:0; height:0}
+.opt span{display:inline-block; padding:9px 15px; border:1px solid #C6D2D5; border-radius:2px;
+  background:#fff; font-size:15.5px; line-height:1.2; transition:none}
+.opt input:checked + span{border-color:var(--deep); background:var(--deep); color:#fff; font-weight:600}
+.opt input:focus-visible + span{outline:3px solid var(--signal-bright); outline-offset:2px}
+.fgroup{grid-column:1/-1; border-top:1px solid rgba(12,32,40,.12); padding-top:20px; margin-top:4px}
+.fgroup > .lab{display:block; font-family:var(--font-d); font-size:19px; font-weight:600; margin-bottom:14px}
+.fnote{grid-column:1/-1; background:var(--fog); padding:14px 16px; font-size:15px; line-height:1.5}
+.fnote b{font-weight:600}
+
+/* ---------- napsali o nás ---------- */
+.quote{display:grid; gap:clamp(28px,4vw,52px); grid-template-columns:1fr; align-items:start}
+@media (min-width:900px){ .quote{grid-template-columns:.9fr 1.1fr} }
+.quote blockquote{margin:0; font-size:clamp(20px,2.6vw,26px); line-height:1.4; font-family:var(--font-d);
+  font-weight:600; color:var(--deep)}
+.quote .who{margin-top:18px; font-size:15px; color:var(--ink-soft)}
+.quote .who b{display:block; color:var(--ink); font-size:16.5px; font-weight:600}
+.story{font-size:16.5px; line-height:1.65}
+.story h4{font-family:var(--font-d); font-size:21px; font-weight:600; margin:22px 0 6px}
+.story details{margin-top:6px}
+.story summary{cursor:pointer; font-weight:600; color:var(--signal); list-style:none; padding:10px 0}
+.story summary::-webkit-details-marker{display:none}
+.story summary::after{content:" ↓"}
+.story details[open] summary::after{content:" ↑"}
+
+/* ---------- galerie ---------- */
+.gal{display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin-top:34px}
+@media (min-width:700px){ .gal{grid-template-columns:repeat(4,1fr)} }
+.gal button{padding:0; border:0; background:var(--deep); cursor:pointer; overflow:hidden; aspect-ratio:1}
+.gal img{width:100%; height:100%; object-fit:cover; opacity:.94}
+.gal button:hover img{opacity:1}
+.gal button.tall{grid-row:span 2; aspect-ratio:1/2}
+@media (max-width:699px){ .gal button.tall{grid-row:span 1; aspect-ratio:1} }
+#lb{position:fixed; inset:0; z-index:90; background:rgba(4,20,26,.96); display:none;
+  align-items:center; justify-content:center; padding:20px}
+#lb.on{display:flex}
+#lb img{max-width:100%; max-height:86vh; object-fit:contain}
+#lb .x{position:absolute; top:14px; right:18px; font-size:34px; color:#fff; background:none; border:0; cursor:pointer; line-height:1}
+#lb .nav{position:absolute; top:50%; transform:translateY(-50%); font-size:40px; color:#fff;
+  background:none; border:0; cursor:pointer; padding:10px 18px; line-height:1}
+#lb .prev{left:4px} #lb .next{right:4px}
+#lb figcaption{position:absolute; bottom:18px; left:0; right:0; text-align:center; color:rgba(255,255,255,.8); font-size:14.5px}
+
 .skip{position:absolute; left:-9999px}
 .skip:focus{position:static; display:inline-block; padding:10px; background:var(--rope); color:#000}
 </style>
@@ -283,9 +330,10 @@ footer a{color:rgba(255,255,255,.8)}
       <li><a class="n" href="#kalendar">Kalendář</a></li>
       <li><a class="n" href="#vybaveni">Vybavení</a></li>
       <li><a class="n" href="#potreba">Co je potřeba</a></li>
+      <li><a class="n" href="#dojmy">Napsali o nás</a></li>
       <li><a class="n" href="#rezervace">Rezervace</a></li>
       <li><a class="n" href="#kontakt">Kontakt</a></li>
-      <li><a class="n" href="app/">Deník SIV</a></li>
+      <li><a class="n dnk" href="app/">Deník SIV</a></li>
       <li><a class="n" href="https://www.siv2024.eu/pl/" hreflang="pl">PL</a></li>
     </ul>
     <a class="call" href="tel:+420775558448">775 558 448</a>
@@ -314,8 +362,8 @@ footer a{color:rgba(255,255,255,.8)}
       </div>
     </div>
     <figure class="hero-photo">
-      <img src="https://6a7fa357e3.clvaw-cdnwnd.com/110966cb692afb01c8174a5657796767/200000656-cf312cf314/Bez%20n%C3%A1zvu%20%E2%80%93%201-4.jpeg?ph=6a7fa357e3" alt="Vláďa Hoffman (Hoffi) — SIV instruktor, testovací a akrobatický pilot">
-      <figcaption>V. Hoffman (HOFFI) — SIV instruktor, test pilot, acro pilot</figcaption>
+      <img src="img/hero.webp" alt="Křídlo v protisvětle nad hladinou jezera při západu slunce" fetchpriority="high">
+      <figcaption>Otmuchów — poslední let dne</figcaption>
     </figure>
   </div>
 </section>
@@ -344,7 +392,7 @@ footer a{color:rgba(255,255,255,.8)}
         </div>
       </div>
       <figure class="photo-frame">
-        <img src="https://6a7fa357e3.clvaw-cdnwnd.com/110966cb692afb01c8174a5657796767/200000530-500ab500ac/12120130_10204314228728380_7221010045520002614_o.jpeg?ph=6a7fa357e3" alt="Trénink nad vodní hladinou">
+        <img src="img/vlek.webp" alt="Motorový člun s odvijákem vleče pilota nad jezerem">
         <figcaption>Přistáváš v místě startu — odpadá balení křídla a cesta autem na kopec.</figcaption>
       </figure>
     </div>
@@ -423,6 +471,36 @@ footer a{color:rgba(255,255,255,.8)}
           </ul>
           <p style="font-size:15px;color:var(--ink-soft);margin-top:14px">Platba kartou i v hotovosti.</p>
           <a class="btn btn-p" href="#rezervace">Rezervovat SIV</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- SIV INDIVIDUAL -->
+    <article class="course flag">
+      <div class="course-top">
+        <h3>SIV INDIVIDUAL</h3>
+        <div class="price">35 000 Kč<small>6 pilotů · 900–1200 m AGL</small></div>
+      </div>
+      <p class="lede">Malá skupina a žádná fronta. Tři piloti létají dopoledne, tři odpoledne — takže půlku dne máš pro sebe a nečekáš na břehu, až na tebe přijde řada.</p>
+      <ul class="meta">
+        <li>Max. 6 pilotů</li>
+        <li>3 dopoledne, 3 odpoledne</li>
+        <li>Termíny v kalendáři</li>
+      </ul>
+      <div class="incl">
+        <div>
+          <h4>Pro koho to je</h4>
+          <ul>
+            <li>Piloti, kteří už na SIV byli a chtějí posunout konkrétní figuru</li>
+            <li>Kdo chce odlétat víc než dva lety denně a nevypadnout z tempa</li>
+            <li>Kdo chce dotáhnout jednu věc do konce — negativku, spirálu, backfly</li>
+          </ul>
+          <p style="font-size:15px;color:var(--ink-soft);margin-top:12px">Ve vzduchu se střídáš s druhým pilotem, takže starty za lodí, figury i přistání v místě startovačky navazují bez prostojů.</p>
+        </div>
+        <div class="out">
+          <h4>Dobré vědět</h4>
+          <ul><li>Rozdělení dne jde domluvit i jinak</li><li>Ubytování a zázemí jako u běžného SIV</li><li>Obsazenost ověř telefonicky</li></ul>
+          <a class="btn btn-p" href="#rezervace">Mám zájem</a>
         </div>
       </div>
     </article>
@@ -543,7 +621,7 @@ footer a{color:rgba(255,255,255,.8)}
         </ul>
       </div>
       <figure class="photo-frame">
-        <img src="https://6a7fa357e3.clvaw-cdnwnd.com/110966cb692afb01c8174a5657796767/200000432-98b7998b7b/BEZPECNOSTNI%20TRENINK-4.jpeg?ph=6a7fa357e3" alt="Bezpečnostní trénink nad vodou">
+        <img src="img/rozbor.webp" alt="Velkoplošná 4K televize ve stanu při večerním rozboru letů">
         <figcaption>Rozbory letů probíhají tentýž den na velkoplošné 4K TV.</figcaption>
       </figure>
     </div>
@@ -580,6 +658,96 @@ footer a{color:rgba(255,255,255,.8)}
   </div>
 </section>
 
+<!-- ======================= DENÍK 175 m ======================= -->
+<section class="dark" id="denik" data-alt="175" data-label="DENÍK">
+  <div class="wrap">
+    <div class="two">
+      <div>
+        <div class="head">
+          <span class="alt-badge">Nově ke každému kurzu</span>
+          <h2>Deník SIV</h2>
+          <p class="lede">Rozbor letu skončí a za týden si z něj pamatuješ tři věci. Proto si všechno, co na kurzu odlétáš, zapisujeme — a po kurzu to zůstane tobě.</p>
+        </div>
+        <ul class="why">
+          <li><b>Každý let, každá figura</b><span>Hodnocení od instruktora u každého pokusu, ne jen dojem z večera.</span></li>
+          <li><b>Chyby a jak je opravit</b><span>U každé chyby stojí, proč se stala a co s ní příště udělat jinak.</span></li>
+          <li><b>Mřížka celého kurzu</b><span>Vidíš, kde jsi ty a kde jsou ostatní — a co ti ještě zbývá zkusit.</span></li>
+          <li><b>Postup napříč kurzy</b><span>Přijedeš podruhé a deník ti ukáže, co se za rok zlepšilo a jaký návyk se ti pořád vrací.</span></li>
+        </ul>
+        <p style="color:rgba(255,255,255,.7); font-size:15.5px; margin-top:22px">
+          Přístup dostaneš mailem po kurzu. Žádné heslo si nevymýšlíš — přijde ti přihlašovací odkaz
+          na adresu, kterou jsi uvedl v přihlášce. Proto se při druhém kurzu hlas pod stejným mailem,
+          ať se ti historie nerozdělí na dvě.
+        </p>
+        <div class="cta-row"><a class="btn btn-g" href="app/">Otevřít deník</a></div>
+      </div>
+      <figure class="photo-frame">
+        <img src="img/brief.webp" alt="Instruktor vysvětluje pilotovi zadání před startem">
+        <figcaption style="color:rgba(255,255,255,.6)">Co se řekne před letem a po něm, zůstane zapsané.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= NAPSALI O NÁS 150 m ======================= -->
+<section id="dojmy" data-alt="150" data-label="OHLASY">
+  <div class="wrap">
+    <div class="head">
+      <span class="alt-badge">Vaše dojmy</span>
+      <h2>Napsali o nás</h2>
+    </div>
+    <div class="quote">
+      <div>
+        <blockquote>„Pošli tam helikoptéru z negativky. Máš na to.“ Já, defenzivní Áčkař, mám točit acro figuru, na kterou jsem dosud koukal na YouTube s otevřenou pusou?</blockquote>
+        <div class="who"><b>MUDr. Mgr. Ján Zajak, PhD</b>SIV INDIVIDUAL, jezero Paczków — 15 výškových letů za 3 letové dny</div>
+        <figure class="photo-frame" style="margin-top:26px">
+          <img src="img/hoffi.webp" alt="Hoffi — SIV instruktor, test pilot a acro pilot, na břehu jezera">
+          <figcaption>V. Hoffman (HOFFI) — SIV instruktor, test pilot, acro pilot</figcaption>
+        </figure>
+      </div>
+      <div class="story">
+        <h4>SIV na steroidech: Jak mě individuální kurz dostal s křídlem EN-A k helikoptéře</h4>
+        <p>I když v oblacích nejraději hobluji Alpy, pořád se považuji za čistokrevně „defenzivního“ pilota. XC otvírám, jen když jsou meteo podmínky naprosto neprůstřelné. Sice bych v koutku duše hrozně rád létal s dravostí borců z Red Bull X-Alps, ale moje profesní lékařské zkušenosti a každodenní pohled z „druhé strany“ mě při sebemenším náznaku divočiny spolehlivě drží při zemi.</p>
+        <p>Svůj první SIV kurz jsem zkusil v roce 2024 u HOFFI. Počasí nám tehdy moc nepřálo a kurz jsem neodlétal celý, ale z jeho osobního přístupu jsem byl regulérně nadšený. Z čeho už jsem nadšený nebyl, byl klasický formát kurzu.</p>
+        <details>
+          <summary>Číst celé</summary>
+          <p>Hrozně mi nevyhovovalo bookovat si termín rok dopředu a pak se modlit k rosničkám, kolik dní vlastně bude letových. A když už letovo bylo, čekání ve frontě na startu s dalšími deseti piloty mi spíš trénovalo nervovou soustavu než pilotáž. Dva výškové lety za den mi prostě přišly zoufale málo.</p>
+          <p>Chtěl jsem intenzivní trénink, ve kterém nevypadnu z tempa. Chtěl jsem konečně poslat své největší strašáky — negativku a deep spirálu — definitivně do historie. Slovo dalo slovo, s HOFFI jsme probrali možnosti a vznikl formát SIV INDIVIDUAL. Výsledek? Za tři letové dny na polském jezeře Paczków jsem absolvoval patnáct plnohodnotných výškových letů.</p>
+          <h4>Tři dny, které mi přepsaly software v hlavě</h4>
+          <p><b>1. den — rozcvička.</b> Kompletní opáčko klasických SIV figur. Frontstall, asymetrické zaklopení v základu i na plném speedu, deep stall, minimálka, pitching a ladění mini wingoverů.</p>
+          <p><b>2. den — první přepsání limitů.</b> Úspěšně jsem odlétal první deep spirály s kontrolovaným pomalým výjezdem. A pak přišel šok. Za masivního supportu z vysílačky od HOFFI a celé jeho crew jsem den zakončil čistým SATem. Přitom před kurzem by mě nenapadlo, že o acro vůbec kdy zavadím.</p>
+          <p><b>3. den — surrealismus ve vzduchu.</b> Cíl byl jasný, nadrilovat negativky. Respektive z negativky nácvik do full stallu s přechodem do backfly jako funkční záchrany, když křídlo zkolabuje. Když už mi to celkem šlo, zahlásil Hoffi do sluchátek klidným hlasem: „Pošli tam helikoptéru z negativky. Máš na to.“ Ten pocit naprostého sci-fi mě nepustil ani u večerních videorozborů. Popravdě mě drží doteď.</p>
+          <h4>Čistá matematika bezpečí</h4>
+          <p>Jasně, individuál něco stojí. Když mi pak pár známých řeklo: „Ty bláho, já bych za SIV tolik peněz nedal,“ jen jsem se usmál. Beru to jako přímou investici do vlastního zdraví a bezpečnosti v tomhle našem nádherném sportu. Pokud mě tyhle automatismy jednou vytáhnou z průšvihu nad lesem, skálou nebo ledovcem, byla to ta nejlevnější životní pojistka.</p>
+          <p>Obrovský respekt patří HOFFI-mu za jeho svatou trpělivost a celé jeho crew za support a za perfektní zázemí kongresového centra Otmuchów. Přeji vám všem bezpečné přistání pokaždé, když vzlétnete — a aspoň takovou vnitřní raketu, jakou jsem zažil já při své první helikoptéře.</p>
+        </details>
+        <a class="btn btn-d" href="https://www.facebook.com/reel/1831013221227900" target="_blank" rel="noopener" style="margin-top:14px">Jak to vypadalo ve vzduchu</a>
+      </div>
+    </div>
+
+    <h3 style="margin-top:clamp(50px,7vw,86px)">Ze sezóny</h3>
+    <div class="gal" id="gal">
+      <button data-src="img/sunset.webp" data-cap="Otmuchów, konec letového dne"><img loading="lazy" src="img/sunset-t.webp" alt="Nafouknuté křídlo na břehu jezera při západu slunce"></button>
+      <button class="tall" data-src="img/crew.webp" data-cap="Crew u vlekového člunu"><img loading="lazy" src="img/crew-t.webp" alt="Instruktoři v oranžových bundách u vlekového člunu"></button>
+      <button data-src="img/brief.webp" data-cap="Briefing před letem"><img loading="lazy" src="img/brief-t.webp" alt="Instruktáž pilota před startem"></button>
+      <button data-src="img/moon.webp" data-cap="Křídlo a měsíc nad Otmuchówem"><img loading="lazy" src="img/moon-t.webp" alt="Pilot vysoko na obloze vedle měsíce"></button>
+      <button data-src="img/zalozak.webp" data-cap="Přebalování záložáku"><img loading="lazy" src="img/zalozak-t.webp" alt="Přebalování záchranného padáku v sále"></button>
+      <button class="tall" data-src="img/ground.webp" data-cap="Pozemní příprava u vody"><img loading="lazy" src="img/ground-t.webp" alt="Pilot s vyvěšeným křídlem na břehu jezera"></button>
+      <button data-src="img/zalozak2.webp" data-cap="Kurz přebalování před sezónou"><img loading="lazy" src="img/zalozak2-t.webp" alt="Skupina pilotů při nácviku balení záložáku"></button>
+      <button data-src="img/clouds.webp" data-cap="Nad jezerem před frontou"><img loading="lazy" src="img/clouds-t.webp" alt="Pilot pod rozsáhlou oblačností"></button>
+      <button data-src="img/hoodie.webp" data-cap="Večer u jezera"><img loading="lazy" src="img/hoodie-t.webp" alt="Pilotka sleduje křídlo při západu slunce"></button>
+      <button data-src="img/zazemi.webp" data-cap="Zázemí u vody"><img loading="lazy" src="img/zazemi-t.webp" alt="Stan zázemí u břehu jezera"></button>
+    </div>
+  </div>
+</section>
+
+<div id="lb" role="dialog" aria-modal="true" aria-label="Fotografie">
+  <button class="x" aria-label="Zavřít">×</button>
+  <button class="nav prev" aria-label="Předchozí">‹</button>
+  <figure style="margin:0"><img id="lbImg" src="" alt=""><figcaption id="lbCap"></figcaption></figure>
+  <button class="nav next" aria-label="Další">›</button>
+</div>
+
 <!-- ======================= REZERVACE 100 m ======================= -->
 <section class="dark" id="rezervace" data-alt="100" data-label="REZERVACE" style="background:var(--deep-2)">
   <div class="wrap">
@@ -590,12 +758,14 @@ footer a{color:rgba(255,255,255,.8)}
     </div>
 
     <div class="form" style="color:var(--ink)">
+      <div class="fnote">Jedeš na SIV podruhé? <b>Přihlas se pod stejným e-mailem jako minule.</b> Podle něj se ti v deníku propojí oba kurzy a uvidíš, jak se ti figury posunuly.</div>
       <div><label for="f-name">Jméno a příjmení</label><input type="text" id="f-name" autocomplete="name"></div>
       <div><label for="f-mail">E-mail</label><input type="email" id="f-mail" autocomplete="email"></div>
       <div><label for="f-tel">Telefonní číslo</label><input type="tel" id="f-tel" autocomplete="tel"></div>
       <div><label for="f-kurz">Vyber kurz</label>
         <select id="f-kurz">
           <option>SIV</option>
+          <option>SIV INDIVIDUAL</option>
           <option>SIV — 1 DEN (termín ověř telefonicky)</option>
           <option>Spirála + G-force trénink</option>
         </select></div>
@@ -608,18 +778,29 @@ footer a{color:rgba(255,255,255,.8)}
       <div><label for="f-hours">Nalétané hodiny</label><input type="text" id="f-hours" inputmode="numeric" placeholder="např. 180"></div>
       <div><label for="f-years">Jak dlouho létáš</label><input type="text" id="f-years" placeholder="např. 4 roky"></div>
 
-      <div class="f-wide"><label>Je to tvoje první SIV?</label>
-        <div class="radios"><label><input type="radio" name="first" value="Ano"> Ano</label><label><input type="radio" name="first" value="Ne" checked> Ne</label></div></div>
-      <div class="f-wide"><label>Startoval jsi z odvijáku nebo navijáku?</label>
-        <div class="radios"><label><input type="radio" name="tow" value="Ano" checked> Ano</label><label><input type="radio" name="tow" value="Ne"> Ne</label></div></div>
-      <div class="f-wide"><label>Máš přebalený záložák?</label>
-        <div class="radios">
-          <label><input type="radio" name="res" value="Ano — kulatý" checked> Ano, kulatý</label>
-          <label><input type="radio" name="res" value="Ano — čtvercový"> Ano, čtvercový</label>
-          <label><input type="radio" name="res" value="Ano — delta"> Ano, delta</label>
-          <label><input type="radio" name="res" value="Ne"> Ne</label>
-        </div></div>
-      <div class="f-wide cbx"><input type="checkbox" id="f-fold" style="width:auto;margin-top:4px"><label for="f-fold">Budu chtít přebalit záložák na místě (590 Kč)</label></div>
+      <div class="fgroup">
+        <span class="lab">Zkušenosti</span>
+        <div style="margin-bottom:18px">
+          <label style="margin-bottom:8px">Je to tvoje první SIV?</label>
+          <label class="opt"><input type="radio" name="first" value="Ano"><span>Ano</span></label>
+          <label class="opt"><input type="radio" name="first" value="Ne" checked><span>Ne</span></label>
+        </div>
+        <div>
+          <label style="margin-bottom:8px">Startoval jsi z odvijáku nebo navijáku?</label>
+          <label class="opt"><input type="radio" name="tow" value="Ano" checked><span>Ano</span></label>
+          <label class="opt"><input type="radio" name="tow" value="Ne"><span>Ne</span></label>
+        </div>
+      </div>
+
+      <div class="fgroup">
+        <span class="lab">Záložák</span>
+        <label style="margin-bottom:8px">Máš ho přebalený?</label>
+        <label class="opt"><input type="radio" name="res" value="Ano — kulatý" checked><span>Ano, kulatý</span></label>
+        <label class="opt"><input type="radio" name="res" value="Ano — čtvercový"><span>Ano, čtvercový</span></label>
+        <label class="opt"><input type="radio" name="res" value="Ano — delta"><span>Ano, delta</span></label>
+        <label class="opt"><input type="radio" name="res" value="Ne"><span>Nemám</span></label>
+        <div class="cbx" style="margin-top:12px"><input type="checkbox" id="f-fold" style="width:auto;margin-top:4px"><label for="f-fold">Budu chtít přebalit záložák na místě (590 Kč)</label></div>
+      </div>
       <div class="f-wide"><label for="f-note">Poznámky nebo otázky</label><textarea id="f-note"></textarea></div>
       <div aria-hidden="true" style="position:absolute;left:-9999px"><input type="text" id="f-web" tabindex="-1" autocomplete="off"></div>
       <div class="f-wide submit-row">
@@ -847,6 +1028,32 @@ document.querySelectorAll(".vid").forEach(b=>{
       allowfullscreen></iframe>`;
   });
 });
+
+/* ---------- galerie ---------- */
+(function(){
+  const items = [...document.querySelectorAll("#gal button")];
+  const lb = document.getElementById("lb"), img = document.getElementById("lbImg"), cap = document.getElementById("lbCap");
+  let i = 0;
+  const show = (n) => {
+    i = (n + items.length) % items.length;
+    img.src = items[i].dataset.src;
+    img.alt = items[i].querySelector("img").alt;
+    cap.textContent = items[i].dataset.cap || "";
+  };
+  const open = (n) => { show(n); lb.classList.add("on"); document.body.style.overflow = "hidden"; };
+  const close = () => { lb.classList.remove("on"); document.body.style.overflow = ""; };
+  items.forEach((b, n) => b.addEventListener("click", () => open(n)));
+  lb.querySelector(".x").addEventListener("click", close);
+  lb.querySelector(".prev").addEventListener("click", (e) => { e.stopPropagation(); show(i - 1); });
+  lb.querySelector(".next").addEventListener("click", (e) => { e.stopPropagation(); show(i + 1); });
+  lb.addEventListener("click", (e) => { if(e.target === lb) close(); });
+  addEventListener("keydown", (e) => {
+    if(!lb.classList.contains("on")) return;
+    if(e.key === "Escape") close();
+    if(e.key === "ArrowLeft") show(i - 1);
+    if(e.key === "ArrowRight") show(i + 1);
+  });
+})();
 
 /* ---------- přihláška → Firestore, při selhání e-mail ---------- */
 const v   = id => (document.getElementById(id).value||"").trim();
