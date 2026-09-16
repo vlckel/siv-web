@@ -604,6 +604,8 @@ footer a{color:rgba(255,255,255,.8)}
         <select id="f-en"><option>EN-A</option><option>EN-B</option><option>EN-C</option><option>EN-D</option><option>2 lajna</option></select></div>
       <div><label for="f-lic">Pilotní průkaz</label>
         <select id="f-lic"><option>Pilot</option><option>Sportovní pilot</option><option>Soutěžní pilot</option><option>Tandem pilot</option></select></div>
+      <div><label for="f-hours">Nalétané hodiny</label><input type="text" id="f-hours" inputmode="numeric" placeholder="např. 180"></div>
+      <div><label for="f-years">Jak dlouho létáš</label><input type="text" id="f-years" placeholder="např. 4 roky"></div>
 
       <div class="f-wide"><label>Je to tvoje první SIV?</label>
         <div class="radios"><label><input type="radio" name="first" value="Ano"> Ano</label><label><input type="radio" name="first" value="Ne" checked> Ne</label></div></div>
@@ -618,6 +620,7 @@ footer a{color:rgba(255,255,255,.8)}
         </div></div>
       <div class="f-wide cbx"><input type="checkbox" id="f-fold" style="width:auto;margin-top:4px"><label for="f-fold">Budu chtít přebalit záložák na místě (590 Kč)</label></div>
       <div class="f-wide"><label for="f-note">Poznámky nebo otázky</label><textarea id="f-note"></textarea></div>
+      <div aria-hidden="true" style="position:absolute;left:-9999px"><input type="text" id="f-web" tabindex="-1" autocomplete="off"></div>
       <div class="f-wide submit-row">
         <button class="btn btn-p" id="send" type="button">Odeslat rezervaci</button>
         <a class="btn btn-g" href="https://wa.me/420775558448" target="_blank" rel="noopener">Napsat na WhatsApp</a>
@@ -668,9 +671,19 @@ footer a{color:rgba(255,255,255,.8)}
    Dokud jsou hodnoty prázdné, web ukáže ukázkové termíny a označí je.
    ========================================================================= */
 const CAL = {
-  calendarId: "",        // např. "abc123@group.calendar.google.com"
-  apiKey:     "",        // např. "AIzaSy..."
+  calendarId: "dcd66a0078a307e203ada67d64d2ef1123a99067b335a7cfb40b3f88d622f643@group.calendar.google.com",
+  apiKey:     "AIzaSyBFatVxPIeTA37quGiK7cjL7hZbohUY7Ns",
   maxResults: 40
+};
+
+/* Firebase — do Firestore padají přihlášky. Klíč není tajný, chrání ho pravidla. */
+const FIREBASE = {
+  apiKey: "AIzaSyAv0CM9dC8hi_Z964eDk2zhEm0ktBxn2eU",
+  authDomain: "kocka-dfbc7.firebaseapp.com",
+  projectId: "kocka-dfbc7",
+  storageBucket: "kocka-dfbc7.firebasestorage.app",
+  messagingSenderId: "717818688777",
+  appId: "1:717818688777:web:a24ddf07c68ae607930fd8"
 };
 
 /* ukázková data — nahradí se, jakmile se doplní CAL výše */
@@ -722,12 +735,13 @@ function render(events, live){
     : '<span class="cal-state">Ukázkové termíny — kalendář ještě není propojený</span>';
 
   list.innerHTML = events.map(ev => `
-    <div class="term">
+    <div class="term" style="${ev.busy ? "opacity:.5" : ""}">
       <div class="date">${fmtRange(ev.start, ev.end)}
         <i>${new Date(ev.start).getFullYear()}${ev.days ? " · "+ev.days+" dní" : ""}</i></div>
       <div class="name">${ev.title}<em>${ev.location||"Otmuchów / Paczków, Polsko"}</em></div>
       <div class="act">
-        <a class="a-book" href="#rezervace">Rezervovat</a>
+        ${ev.busy ? '<span style="font-size:14.5px;padding:9px 0;color:rgba(255,255,255,.6)">obsazeno</span>'
+                  : '<a class="a-book" href="#rezervace">Rezervovat</a>'}
         <a class="a-add" href="${gcalLink(ev)}" target="_blank" rel="noopener">Přidat do kalendáře</a>
       </div>
     </div>`).join("");
@@ -741,10 +755,11 @@ function render(events, live){
          href="https://calendar.google.com/calendar/ical/${id}/public/basic.ics">Odebírat (.ics)</a>`;
   }
 
-  /* termíny rovnou do rezervačního formuláře */
-  sel.innerHTML = events.map(ev =>
-    `<option>${ev.title.replace(/\s*—.*$/,"")} · ${longRange(ev.start, ev.end)}</option>`
-  ).join("") + '<option>Jiný termín — domluvíme telefonicky</option>';
+  /* termíny rovnou do rezervačního formuláře — hodnota je id události, ne text */
+  const free = events.filter(ev => !ev.busy);
+  sel.innerHTML = free.map(ev =>
+    `<option value="${ev.gcalId||""}">${ev.title.replace(/\s*—.*$/,"")} · ${longRange(ev.start, ev.end)}</option>`
+  ).join("") + '<option value="">Jiný termín — domluvíme telefonicky</option>';
 }
 
 async function loadCalendar(){
@@ -762,7 +777,9 @@ async function loadCalendar(){
       if(it.end.date){ const d=new Date(e); d.setDate(d.getDate()-1);
         e = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
       const days = Math.round((new Date(e)-new Date(s))/86400000)+1;
-      return { start:s, end:e, title:it.summary||"SIV kurz", location:it.location||"", days };
+      const title = it.summary || "SIV kurz";
+      return { gcalId: it.id, start:s, end:e, title, location:it.location||"",
+               days, busy: /obsazeno/i.test(title) };
     });
     render(events, true);
   }catch(err){
@@ -830,32 +847,79 @@ document.querySelectorAll(".vid").forEach(b=>{
   });
 });
 
-/* ---------- rezervační formulář → e-mail ---------- */
-document.getElementById("send").addEventListener("click", ()=>{
-  const v = id => (document.getElementById(id).value||"").trim();
-  const rad = n => (document.querySelector(`input[name="${n}"]:checked`)||{}).value || "";
-  const out = document.getElementById("formOut");
-  if(!v("f-name") || !v("f-tel")){ out.textContent = "Doplň prosím jméno a telefon."; return; }
+/* ---------- přihláška → Firestore, při selhání e-mail ---------- */
+const v   = id => (document.getElementById(id).value||"").trim();
+const rad = n  => (document.querySelector(`input[name="${n}"]:checked`)||{}).value || "";
+
+function asMail(d){
   const body = [
-    "Jméno: "+v("f-name"),
-    "E-mail: "+v("f-mail"),
-    "Telefon: "+v("f-tel"),
-    "Kurz: "+v("f-kurz"),
-    "Termín: "+v("f-term"),
-    "Křídlo: "+v("f-wing")+" ("+v("f-en")+")",
-    "Pilotní průkaz: "+v("f-lic"),
-    "První SIV: "+rad("first"),
-    "Zkušenost s odvijákem/navijákem: "+rad("tow"),
-    "Přebalený záložák: "+rad("res"),
-    "Přebalit na místě (590 Kč): "+(document.getElementById("f-fold").checked?"Ano":"Ne"),
-    "",
-    v("f-note")
+    "Jméno: "+d.name, "E-mail: "+d.email, "Telefon: "+d.phone,
+    "Kurz: "+d.course, "Termín: "+d.courseLabel,
+    "Křídlo: "+d.glider+" ("+d.cls+")",
+    "Nalétáno: "+d.hours+" h, "+d.years,
+    "Pilotní průkaz: "+d.licence,
+    "První SIV: "+d.firstSiv, "Odviják/naviják: "+d.tow,
+    "Záložák: "+d.reserve, "Přebalit na místě: "+(d.repack?"Ano":"Ne"),
+    "", d.notes
   ].join("\n");
-  out.textContent = "Otevírám e-mail…";
   location.href = "mailto:SIV2024@seznam.cz?subject="
-    + encodeURIComponent("Rezervace SIV — "+v("f-name"))
+    + encodeURIComponent("Přihláška SIV — "+d.name)
     + "&body=" + encodeURIComponent(body);
+}
+
+document.getElementById("send").addEventListener("click", async ()=>{
+  const out = document.getElementById("formOut");
+  const btn = document.getElementById("send");
+  if(v("f-web")) return;                      // robot vyplnil skryté pole
+  if(!v("f-name") || !v("f-tel")){ out.textContent = "Doplň prosím jméno a telefon."; return; }
+
+  const sel = document.getElementById("f-term");
+  const d = {
+    name: v("f-name"), email: v("f-mail"), phone: v("f-tel"),
+    glider: v("f-wing"), cls: v("f-en"),
+    hours: v("f-hours"), years: v("f-years"),
+    course: v("f-kurz"),
+    courseGcalId: sel.value || "",
+    courseLabel: sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : "",
+    firstSiv: rad("first"), tow: rad("tow"), reserve: rad("res"),
+    repack: document.getElementById("f-fold").checked,
+    notes: v("f-note"),
+    licence: v("f-lic")
+  };
+
+  btn.disabled = true; out.textContent = "Odesílám…";
+  try{
+    if(!window.sendRegistration) throw new Error("bez Firestore");
+    await window.sendRegistration(d);
+    out.textContent = "Přihláška odeslána. Ozveme se ti.";
+    btn.disabled = false;
+  }catch(e){
+    console.warn("Přihlášku se nepodařilo uložit:", e);
+    out.textContent = "Odesílám e-mailem…";
+    btn.disabled = false;
+    asMail(d);
+  }
 });
+</script>
+
+<script type="module">
+/* Přihláška se zapisuje do Firestore. Číst ji smí jen Hoffi — viz firestore.rules.
+   Poznámka k poli licence: v pravidlech není, proto se skládá do notes.        */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+try{
+  const fs = getFirestore(initializeApp(FIREBASE));
+  window.sendRegistration = (d) => addDoc(collection(fs, "registrations"), {
+    name: d.name, email: d.email, phone: d.phone,
+    glider: d.glider, cls: d.cls, hours: d.hours, years: d.years,
+    course: d.course, courseGcalId: d.courseGcalId, courseLabel: d.courseLabel,
+    firstSiv: d.firstSiv, tow: d.tow, reserve: d.reserve, repack: d.repack,
+    notes: [d.notes, d.licence ? "Průkaz: "+d.licence : ""].filter(Boolean).join("\n"),
+    createdAt: serverTimestamp()
+  });
+}catch(e){ console.warn("Firestore není k dispozici, přihlášky půjdou mailem:", e); }
 </script>
 </body>
 </html>
