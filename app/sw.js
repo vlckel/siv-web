@@ -1,5 +1,5 @@
 /* KOCKA — cache the app so the tablet works with no signal */
-const CACHE = "kocka-v19";
+const CACHE = "kocka-v20";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (e) => {
